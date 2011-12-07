@@ -1,0 +1,15 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="GRF#/Main.cs">
+    <Files>
+      <File FileName="GRF#/Main.cs" Line="22" Column="24" />
+      <File FileName="GRF#/GRFFile.cs" Line="82" Column="4" />
+      <File FileName="GRF#/SharpGRF.cs" Line="159" Column="1" />
+      <File FileName="GRF#/DES.cs" Line="168" Column="6" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

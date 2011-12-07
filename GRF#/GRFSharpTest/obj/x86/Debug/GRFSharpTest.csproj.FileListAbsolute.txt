@@ -1,0 +1,8 @@
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\bin\Debug\GRFSharpTest.exe
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\bin\Debug\GRFSharpTest.pdb
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\bin\Debug\GRF#.dll
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\bin\Debug\Ionic.Zlib.dll
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\bin\Debug\GRF#.pdb
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\obj\x86\Debug\GRFSharpTest.exe
+C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRFSharpTest\obj\x86\Debug\GRFSharpTest.pdb
