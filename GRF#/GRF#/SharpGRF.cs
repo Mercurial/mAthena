@@ -229,7 +229,7 @@ namespace SAIB.SharpGRF
 
 
                 GRFFile newGRFFile = new GRFFile(
-                    fileName,
+                    System.Text.Encoding.GetEncoding("EUC-KR").GetString(System.Text.Encoding.Default.GetBytes(fileName)),
                     fileCompressedLength,
                     fileCompressedLengthAligned,
                     fileUncompressedLength,

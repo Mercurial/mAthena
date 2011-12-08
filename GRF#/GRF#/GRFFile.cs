@@ -20,6 +20,7 @@ namespace SAIB.SharpGRF
 
         #region public properties
         public string Name { get { return _filename; } }
+        public string Extension { get { return new System.IO.FileInfo(_filename).Extension; } }
         public int CompressedLength { get { return _compressedLength; } }
         public int UncompressedLength { get { return _uncompressedLength; } }
         public int CompressedLengthAligned { get { return _compressedLength; } }
@@ -39,14 +40,21 @@ namespace SAIB.SharpGRF
             int cycle,
             SharpGRF ownerGRF) // Constructor
         {
-            _filename = fileName;
-            _compressedLength = compressedLength;
-            _comressedLengthAligned = compressedLengthAligned;
-            _uncompressedLength = uncompressedLength;
-            _flags = flags;
-            _offset = offset;
-            _cycle = cycle;
-            _ownerGRF = ownerGRF;
+            try
+            {
+                _filename = fileName;
+                _compressedLength = compressedLength;
+                _comressedLengthAligned = compressedLengthAligned;
+                _uncompressedLength = uncompressedLength;
+                _flags = flags;
+                _offset = offset;
+                _cycle = cycle;
+                _ownerGRF = ownerGRF;
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
         #endregion
 
