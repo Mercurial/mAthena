@@ -17,6 +17,9 @@ using Microsoft.Win32;
 using SAIB.SharpGRF;
 using System.Collections.ObjectModel;
 using System.Media;
+using System.ComponentModel;
+using System.Windows.Media;
+using System.Windows.Documents;
 
 namespace GRFSharper
 {
@@ -26,6 +29,8 @@ namespace GRFSharper
     public partial class MainWindow : RibbonWindow
     {
         SharpGRF baseGRF = new SharpGRF();
+        private GridViewColumnHeader _CurSortCol = null;
+        private SortAdorner _CurAdorner = null;
 
         ObservableCollection<GRFFile> _GrfFileCollection = new ObservableCollection<GRFFile>();
         public MainWindow()
@@ -45,7 +50,7 @@ namespace GRFSharper
         private void BackstageTabItem_MouseUp(object sender, MouseButtonEventArgs e)
         {
             OpenFileDialog ofdGRF = new OpenFileDialog();
-            ofdGRF.Filter = "GRF Files (*.grf)|*.grf";
+            ofdGRF.Filter = "GRF Files (*.grf)|*.grf|GPF Files (*.gpf)|*.gpf";
             ofdGRF.RestoreDirectory = true;
             if ((bool)ofdGRF.ShowDialog())
             {
@@ -143,6 +148,27 @@ namespace GRFSharper
             }
         }
 
+        private void SortClick(object sender, RoutedEventArgs e)
+        {
+            GridViewColumnHeader column = sender as GridViewColumnHeader;
+            String field = column.Tag as String;
+
+            if (_CurSortCol != null)
+            {
+                AdornerLayer.GetAdornerLayer(_CurSortCol).Remove(_CurAdorner);
+                lvGRFItems.Items.SortDescriptions.Clear();
+            }
+
+            ListSortDirection newDir = ListSortDirection.Ascending;
+            if (_CurSortCol == column && _CurAdorner.Direction == newDir)
+                newDir = ListSortDirection.Descending;
+
+            _CurSortCol = column;
+            _CurAdorner = new SortAdorner(_CurSortCol, newDir);
+            AdornerLayer.GetAdornerLayer(_CurSortCol).Add(_CurAdorner);
+            lvGRFItems.Items.SortDescriptions.Add(new SortDescription(field, newDir));
+        }
+
         private void textBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (textBox1.Text.Length > 3)
@@ -154,13 +180,6 @@ namespace GRFSharper
                 lvGRFItems.ItemsSource = _GrfFileCollection;
             }
         }
-
-        private void RibbonWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
 
     }
 }
