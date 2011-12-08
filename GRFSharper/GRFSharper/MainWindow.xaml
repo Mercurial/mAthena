@@ -3,35 +3,37 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Title="GRF Sharper v0.1" Width="605" Height="442" Background="#FFEBEDF0">
+    Title="GRF Sharper v0.1" Width="1052" Height="623" Background="#FFEBEDF0" Loaded="RibbonWindow_Loaded">
     <Grid Name="mainGrid">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280*" />
-            <ColumnDefinition Width="518*" />
+            <ColumnDefinition Width="220*" />
+            <ColumnDefinition Width="448*" />
+            <ColumnDefinition Width="362" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="140" />
             <RowDefinition Height="434*" />
         </Grid.RowDefinitions>
-        <Fluent:Ribbon Name="mainRibbon" Grid.ColumnSpan="2"  IsMinimizedChanged="Ribbon_IsMinimizedChanged" >
+        <Fluent:Ribbon Name="mainRibbon" Grid.ColumnSpan="3"  IsMinimizedChanged="Ribbon_IsMinimizedChanged" >
             <!--Contextual Tab Groups-->
             <Fluent:Ribbon.ContextualGroups>
-                <Fluent:RibbonContextualTabGroup Header="Options" Visibility="Visible" x:Name="toolsGroup" Background="Blue" BorderBrush="SkyBlue" />
+                <Fluent:RibbonContextualTabGroup Header="Options" Visibility="Visible" x:Name="toolsGroup" Background="Red" BorderBrush="SkyBlue" />
+                <Fluent:RibbonContextualTabGroup Header="Options" Visibility="Visible" x:Name="toolsGroup2" Background="Red" BorderBrush="SkyBlue" />
             </Fluent:Ribbon.ContextualGroups>
 
-            
+
 
             <!--Tabs-->
-            <Fluent:RibbonTabItem Header="GRF Manipulation" Name="mainTab"  Group="{Binding ElementName=toolsGroup}">
+            <Fluent:RibbonTabItem Header="GRF Manipulation" Name="mainTab"  Group="{Binding ElementName=toolsGroup}" Background="#FF225EA3">
                 <Fluent:RibbonGroupBox Header="Group">
-                    <Fluent:Button Name="buttonExtAll" Header="Extract All" Icon="Images\Blue.png" LargeIcon="Images\BlueLarge.png" />
-                    <Fluent:Button Name="buttonExt" Header="Extract Selected" Icon="Images\Blue.png" LargeIcon="Images\BlueLarge.png" />
+                    <Fluent:Button Name="buttonExtAll" Header="Extract All" Icon="Images\Red.png" LargeIcon="Images\Red.png" />
+                    <Fluent:Button Name="buttonExt" Header="Extract Selected" Icon="Images\Red.png" LargeIcon="Images\Red.png" />
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
 
             <!--Backstage-->
             <Fluent:Ribbon.Menu>
-                <Fluent:Backstage>
+                <Fluent:Backstage Background="#FF3333A7">
                     <Fluent:BackstageTabControl>
                         <Fluent:BackstageTabItem Header="New"/>
                         <Fluent:BackstageTabItem Header="Open" MouseUp="BackstageTabItem_MouseUp">
@@ -40,15 +42,19 @@
                 </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
         </Fluent:Ribbon>
-            <ListView Name="lvGRFItems" Grid.Row="1" Grid.ColumnSpan="2" VerticalContentAlignment="Top" FontFamily="Segoe UI" FontSize="14" FontWeight="Normal" FontStretch="Normal" AllowDrop="True" BorderThickness="1">
-                <ListView.View>
-                    <GridView AllowsColumnReorder="False">
-                        <GridViewColumn Header="Filename" DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn Header="CompressedSize" DisplayMemberBinding="{Binding CompressedLength}"/>
-                        <GridViewColumn Header="UncompressedSize"  DisplayMemberBinding="{Binding UncompressedLength}" />
-                        <GridViewColumn Header="Offset"  DisplayMemberBinding="{Binding Offset}" />
-                    </GridView>
-                </ListView.View>
+        <ListView Name="lvGRFItems" Grid.Row="1" VerticalContentAlignment="Top" FontFamily="Segoe UI" FontSize="14" FontWeight="Normal" FontStretch="Normal" AllowDrop="True" BorderThickness="1" Margin="0,30,9,0" SelectionChanged="lvGRFItems_SelectionChanged" Grid.ColumnSpan="2">
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Filename" DisplayMemberBinding="{Binding Name}" Width="200"/>
+                    <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Extension}" Width="50"/>
+                    <GridViewColumn Header="Size"  DisplayMemberBinding="{Binding UncompressedLength}" Width="160" />
+                </GridView>
+            </ListView.View>
         </ListView>
+        <TextBox Height="23" Name="textBox1" VerticalAlignment="Top" Grid.Row="1" TextChanged="textBox1_TextChanged" Margin="0,0,9,0" Grid.ColumnSpan="2" />
+        <GridSplitter Width="8
+                      " Grid.Row="1" Margin="0,6,0,0" Grid.Column="1" />
+        <Image Grid.Column="2" Grid.Row="1" Name="previewImage" Stretch="Fill" Visibility="Hidden" />
+        <TextBox Name="previewText" Text="" Grid.Row="1" Visibility="Hidden" VerticalScrollBarVisibility="Auto" Grid.Column="2" />
     </Grid>
 </Fluent:RibbonWindow>

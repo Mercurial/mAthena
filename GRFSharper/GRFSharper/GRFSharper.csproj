@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Fluent">
-      <HintPath>..\..\..\..\Fluent Ribbon Control Suite 2.0\.NET 4.0\Assembly\Release\Fluent.dll</HintPath>
+      <HintPath>..\Dependencies\Fluent.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -99,6 +99,14 @@
     <ProjectReference Include="..\..\GRF#\GRF#\GRF#.csproj">
       <Project>{2979AB5D-A234-42E3-B54F-B9F78A83E50C}</Project>
       <Name>GRF#</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SPR\SPR.csproj">
+      <Project>{60D2422C-B3B2-4CF8-8096-085651FAB046}</Project>
+      <Name>SPR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TGA\TargaImage.csproj">
+      <Project>{56F4BD87-2404-4263-80D5-6FA2161EB0A4}</Project>
+      <Name>TargaImage</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
