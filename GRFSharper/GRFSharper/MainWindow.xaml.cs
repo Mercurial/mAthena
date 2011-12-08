@@ -104,6 +104,17 @@ namespace GRFSharper
                         previewImage.Visibility = Visibility.Visible;
                         break;
 
+                    case ".gat":
+                        GRFSharperAddons.GAT gat = new GRFSharperAddons.GAT(file.Data);
+                        bi = new BitmapImage();
+                        bi.BeginInit();
+                        bi.StreamSource = gat.GetBitmapStream();
+                        bi.EndInit();
+                        previewImage.Stretch = Stretch.None;
+                        previewImage.Source = bi;
+                        previewImage.Visibility = Visibility.Visible;
+                        break;
+
                     case ".pal":
                         GRFSharperAddons.PAL pal = new GRFSharperAddons.PAL();
                         pal.Load(file.Data);

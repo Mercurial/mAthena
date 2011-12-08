@@ -4,7 +4,7 @@
     xmlns:Behaviours="clr-namespace:GRFSharper.Wpf.Behaviours"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Title="GRF Sharper v0.1" Width="1052" Height="623" Background="#FFEBEDF0" Loaded="RibbonWindow_Loaded">
+    Title="GRF Sharper v0.1" Width="1052" Height="623" Background="#FFEBEDF0">
     <Grid Name="mainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220*" />
@@ -27,8 +27,8 @@
             <!--Tabs-->
             <Fluent:RibbonTabItem Header="GRF Manipulation" Name="mainTab"  Group="{Binding ElementName=toolsGroup}" Background="#FF225EA3">
                 <Fluent:RibbonGroupBox Header="Group">
-                    <Fluent:Button Name="buttonExtAll" Header="Extract All" Icon="Images\archive_extract.png"  LargeIcon="Images\archive_extract.png" Click="buttonExtAll_Click" />
-                    <Fluent:Button Name="buttonExt" Header="Extract Selected" Icon="Images\archive_extract.png" LargeIcon="Images\archive_extract.png" Click="buttonExt_Click" />
+                    <Fluent:Button Name="buttonExtAll" Header="Extract All" Icon="Images\archive_extract.png"  LargeIcon="Images\archive_extract.png" />
+                    <Fluent:Button Name="buttonExt" Header="Extract Selected" Icon="Images\archive_extract.png" LargeIcon="Images\archive_extract.png" />
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
 
