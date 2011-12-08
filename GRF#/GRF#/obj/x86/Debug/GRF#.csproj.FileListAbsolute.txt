@@ -1,6 +1,0 @@
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\bin\Debug\GRF#.pdb
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\bin\Debug\Ionic.Zlib.dll
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\obj\x86\Debug\GRF#.pdb
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\bin\Debug\GRF#.dll
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\obj\x86\Debug\GRF#.dll

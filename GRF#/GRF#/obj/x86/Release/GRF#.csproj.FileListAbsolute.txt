@@ -1,4 +1,0 @@
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\bin\Release\GRF#.exe
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\bin\Release\Ionic.Zlib.dll
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\obj\x86\Release\ResolveAssemblyReference.cache
-C:\Users\Mercurial\Documents\svn\mathena\GRF#\GRF#\obj\x86\Release\GRF#.exe
