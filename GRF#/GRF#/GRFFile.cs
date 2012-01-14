@@ -14,7 +14,7 @@ namespace SAIB.SharpGRF
         private int _compressedLength;
         private int _comressedLengthAligned;
         private int _uncompressedLength;
-        private char _flags;
+        private byte _flags;
         private int _offset;
         private int _cycle;
         private SharpGRF _ownerGRF;
@@ -27,7 +27,7 @@ namespace SAIB.SharpGRF
         public int CompressedLength { get { return _compressedLength; } }
         public int UncompressedLength { get { return _uncompressedLength; } }
         public int CompressedLengthAligned { get { return _compressedLength; } }
-        public char Flags { get { return _flags; } }
+        public byte Flags { get { return _flags; } }
         public int Offset { get { return _offset; } }
         public int Cycle { get { return _cycle; } }
         public byte[] Data { get { return _ownerGRF.GetDataFromFile(this); } }
@@ -39,26 +39,19 @@ namespace SAIB.SharpGRF
             int compressedLength,
             int compressedLengthAligned,
             int uncompressedLength,
-            char flags,
+            byte flags,
             int offset,
             int cycle,
             SharpGRF ownerGRF) // Constructor
         {
-            try
-            {
-                _filename = fileName;
-                _compressedLength = compressedLength;
-                _comressedLengthAligned = compressedLengthAligned;
-                _uncompressedLength = uncompressedLength;
-                _flags = flags;
-                _offset = offset;
-                _cycle = cycle;
-                _ownerGRF = ownerGRF;
-            }
-            catch (Exception ex)
-            {
-
-            }
+            _filename = fileName;
+            _compressedLength = compressedLength;
+            _comressedLengthAligned = compressedLengthAligned;
+            _uncompressedLength = uncompressedLength;
+            _flags = flags;
+            _offset = offset;
+            _cycle = cycle;
+            _ownerGRF = ownerGRF;
         }
         #endregion
 
@@ -85,13 +78,10 @@ namespace SAIB.SharpGRF
             else
             {
                 fileStream = thisFileInfo.Open(FileMode.Open);
-
             }
 
             fileStream.Write(this.Data, 0, this.Data.Length);
             fileStream.Close();
-
-
         }
         #endregion
 
@@ -115,9 +105,8 @@ namespace SAIB.SharpGRF
         public void SaveBody(BinaryWriter bw)
         {
             bw.Flush();
-            _offset = (int)bw.BaseStream.Position - 46;
 
-            if (_uncompressedBody != null)
+            if ((_flags & 1) != 0 && _uncompressedBody != null)
             {
                 byte[] compressedBody = ZlibStream.CompressBuffer(_uncompressedBody);
 
@@ -126,13 +115,14 @@ namespace SAIB.SharpGRF
                 _uncompressedLength = _uncompressedBody.Length;
                 _compressedLength = compressedBody.Length;
                 _comressedLengthAligned = _compressedLength + (4 - ((_compressedLength - 1) % 4)) - 1;
-                _flags = (char)0;
+                _flags = 1;
                 _cycle = 0;
             }
             else
             {
-                // Store here to don't read twice
                 byte[] data = _ownerGRF.GetOriginalDataFromFile(this);
+
+                _offset = (int)bw.BaseStream.Position - 46;
 
                 bw.Write(data, 0, data.Length);
             }

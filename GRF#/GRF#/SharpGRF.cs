@@ -3,13 +3,15 @@ using System.IO;
 using Ionic.Zlib;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace SAIB.SharpGRF
 {
-
-
     public class SharpGRF
     {
+
+        [DllImport("zlib1.dll")]
+        public static extern int compress(byte[] dest, int destLen, byte[] source, int sourceLen);
 
         #region local variables
         private string _filePathToGRF;
@@ -27,7 +29,7 @@ namespace SAIB.SharpGRF
         const int sizeOfChar = sizeof(char);
 
         private string _signature;
-        private string _encryptionKey;
+        private byte[] _encryptionKey;
         private int _fileTableOffset;
         private int _version;
         private int _m1;
@@ -67,7 +69,7 @@ namespace SAIB.SharpGRF
         }
 
 
-        public string EncryptionKey
+        public byte[] EncryptionKey
         {
             get
             {
@@ -100,7 +102,7 @@ namespace SAIB.SharpGRF
         public SharpGRF() // Constructor
         {
             _signature = "Master of Magic";
-            _encryptionKey = "";
+            _encryptionKey = new byte[14];
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="SAIB.SharpGRF.SharpGRF"/> class.
@@ -113,7 +115,7 @@ namespace SAIB.SharpGRF
             _filePathToGRF = filePathToGRF;
 
             _signature = "Master of Magic";
-            _encryptionKey = "";
+            _encryptionKey = new byte[14];
         }
         #endregion
 
@@ -134,9 +136,7 @@ namespace SAIB.SharpGRF
             bw.Write(signatureByte, 0, 15);
             bw.Write((byte)0);
 
-            byte[] encKey = new byte[Math.Max(_encryptionKey.Length, 14)];
-            Encoding.ASCII.GetBytes(_encryptionKey).CopyTo(encKey, 0);
-            bw.Write(encKey, 0, 14);
+            bw.Write(_encryptionKey, 0, 14);
 
             bw.Write((int)0); // will be updated later
             bw.Write((int)_m1);
@@ -161,6 +161,9 @@ namespace SAIB.SharpGRF
             }
 
             bw2.Flush();
+            //byte[] compressedBody = new byte[_uncompressedLength + 100];
+            //int size = compressedBody.Length;
+            //ZLib.compress(compressedBody, ref size, bodyStream.GetBuffer(), (int)bodyStream.Length);
             byte[] compressedBody = ZlibStream.CompressBuffer(bodyStream.GetBuffer());
 
             bw.Write((int)compressedBody.Length);
@@ -187,7 +190,7 @@ namespace SAIB.SharpGRF
         /// </summary>
         public void Open()
         {
-            string signature, encryptionKey;
+            string signature;
             int tableOffset, version, m1, m2;
             _GRFFiles.Clear();
             _grfStream = new FileStream(_filePathToGRF, FileMode.Open);
@@ -197,12 +200,11 @@ namespace SAIB.SharpGRF
             byte[] signatureByte = new byte[15];
             _grfStream.Read(signatureByte, 0, 15);
             signature = System.Text.Encoding.ASCII.GetString(signatureByte);
+            br.ReadByte();
 
             // Read GRF File Header -> Encryption Key
-            byte[] allowencryptionBytes = new byte[15];
-            _grfStream.Read(allowencryptionBytes, 0, 15);
-            encryptionKey = System.Text.Encoding.ASCII.GetString(allowencryptionBytes);
-
+            byte[] encryptionKey = new byte[14];
+            _grfStream.Read(encryptionKey, 0, 14);
 
             tableOffset = br.ReadInt32();
             m1 = br.ReadInt32();
@@ -225,6 +227,7 @@ namespace SAIB.SharpGRF
             _grfStream.Read(compressedBodyBytes, 0, _compressedLength);
 
             _bodyBytes = ZlibStream.UncompressBuffer(compressedBodyBytes);
+
             _fileCount = m2 - m1 - 7;
 
             MemoryStream bodyStream = new MemoryStream(_bodyBytes);
@@ -244,12 +247,12 @@ namespace SAIB.SharpGRF
                     fileOffset = 0,
                     fileCycle = 0;
 
-                char fileFlags = (char)0;
+                byte fileFlags = 0;
 
                 fileCompressedLength = bodyReader.ReadInt32();
                 fileCompressedLengthAligned = bodyReader.ReadInt32();
                 fileUncompressedLength = bodyReader.ReadInt32();
-                fileFlags = (char)bodyReader.ReadByte();
+                fileFlags = bodyReader.ReadByte();
                 fileOffset = bodyReader.ReadInt32();
 
                 if (fileFlags == 3)
@@ -348,9 +351,21 @@ namespace SAIB.SharpGRF
                 i++;
             }
 
-            GRFFile f = new GRFFile(name, 0, 0, 0, (char)0, 0, 0, this);
+            GRFFile f = new GRFFile(name, 0, 0, 0, 0, 0, 0, this);
             f.UncompressedBody = data;
             _GRFFiles.Add(f);
+        }
+
+        public void DeleteFile(string name)
+        {
+            foreach (GRFFile file in _GRFFiles)
+            {
+                if (file.Name.ToLower() == name.ToLower())
+                {
+                    _GRFFiles.Remove(file);
+                    return;
+                }
+            }
         }
     }
 }
