@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Text;
+using Ionic.Zlib;
 
 namespace SAIB.SharpGRF
 {
@@ -16,6 +18,7 @@ namespace SAIB.SharpGRF
         private int _offset;
         private int _cycle;
         private SharpGRF _ownerGRF;
+        private byte[] _uncompressedBody;
         #endregion
 
         #region public properties
@@ -28,6 +31,7 @@ namespace SAIB.SharpGRF
         public int Offset { get { return _offset; } }
         public int Cycle { get { return _cycle; } }
         public byte[] Data { get { return _ownerGRF.GetDataFromFile(this); } }
+        public byte[] UncompressedBody { get { return _uncompressedBody; } set { _uncompressedBody = value; } }
         #endregion
 
         #region constructor
@@ -90,6 +94,49 @@ namespace SAIB.SharpGRF
 
         }
         #endregion
+
+        /// <summary>
+        /// Write the file entry data on an steam.
+        /// This also prepare the compressed buffer to be writed.
+        /// </summary>
+        /// <param name="bw">Stream to write the file entry.</param>
+        public void Save(BinaryWriter bw)
+        {
+            byte[] name = Encoding.GetEncoding(949).GetBytes(_filename);
+            bw.Write(name, 0, name.Length);
+            bw.Write((byte)0);
+            bw.Write((int)_compressedLength);
+            bw.Write((int)_comressedLengthAligned);
+            bw.Write((int)_uncompressedLength);
+            bw.Write((byte)_flags);
+            bw.Write((int)_offset);
+        }
+
+        public void SaveBody(BinaryWriter bw)
+        {
+            bw.Flush();
+            _offset = (int)bw.BaseStream.Position - 46;
+
+            if (_uncompressedBody != null)
+            {
+                byte[] compressedBody = ZlibStream.CompressBuffer(_uncompressedBody);
+
+                bw.Write(compressedBody, 0, compressedBody.Length);
+
+                _uncompressedLength = _uncompressedBody.Length;
+                _compressedLength = compressedBody.Length;
+                _comressedLengthAligned = _compressedLength + (4 - ((_compressedLength - 1) % 4)) - 1;
+                _flags = (char)0;
+                _cycle = 0;
+            }
+            else
+            {
+                // Store here to don't read twice
+                byte[] data = _ownerGRF.GetOriginalDataFromFile(this);
+
+                bw.Write(data, 0, data.Length);
+            }
+        }
     }
 }
 
