@@ -108,6 +108,8 @@ namespace SAIB.SharpGRF
 
             if ((_flags & 1) != 0 && _uncompressedBody != null)
             {
+                _offset = (int)bw.BaseStream.Position - 46;
+
                 byte[] compressedBody = ZlibStream.CompressBuffer(_uncompressedBody);
 
                 bw.Write(compressedBody, 0, compressedBody.Length);
