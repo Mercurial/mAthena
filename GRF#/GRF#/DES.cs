@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.IO;
 
-namespace SAIB.SharpGRF
+namespace GRFSharp
 {
     public static class DES
     {

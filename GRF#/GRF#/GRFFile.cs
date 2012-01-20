@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using Ionic.Zlib;
 
-namespace SAIB.SharpGRF
+namespace GRFSharp
 {
     public class GRFFile
     {
@@ -17,7 +17,7 @@ namespace SAIB.SharpGRF
         private byte _flags;
         private int _offset;
         private int _cycle;
-        private SharpGRF _ownerGRF;
+        private GRF _ownerGRF;
         private byte[] _uncompressedBody;
         #endregion
 
@@ -42,7 +42,7 @@ namespace SAIB.SharpGRF
             byte flags,
             int offset,
             int cycle,
-            SharpGRF ownerGRF) // Constructor
+            GRF ownerGRF) // Constructor
         {
             _filename = fileName;
             _compressedLength = compressedLength;
@@ -87,7 +87,7 @@ namespace SAIB.SharpGRF
 
         /// <summary>
         /// Write the file entry data on an steam.
-        /// This also prepare the compressed buffer to be writed.
+        /// This also prepare the compressed buffer to be writen.
         /// </summary>
         /// <param name="bw">Stream to write the file entry.</param>
         public void Save(BinaryWriter bw)
@@ -105,15 +105,11 @@ namespace SAIB.SharpGRF
         public void SaveBody(BinaryWriter bw)
         {
             bw.Flush();
-
             if ((_flags & 1) != 0 && _uncompressedBody != null)
             {
                 _offset = (int)bw.BaseStream.Position - 46;
-
                 byte[] compressedBody = ZlibStream.CompressBuffer(_uncompressedBody);
-
                 bw.Write(compressedBody, 0, compressedBody.Length);
-
                 _uncompressedLength = _uncompressedBody.Length;
                 _compressedLength = compressedBody.Length;
                 _comressedLengthAligned = _compressedLength + (4 - ((_compressedLength - 1) % 4)) - 1;
@@ -123,9 +119,7 @@ namespace SAIB.SharpGRF
             else
             {
                 byte[] data = _ownerGRF.GetOriginalDataFromFile(this);
-
                 _offset = (int)bw.BaseStream.Position - 46;
-
                 bw.Write(data, 0, data.Length);
             }
         }

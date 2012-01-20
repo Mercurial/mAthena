@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace SAIB.SharpGRF
+namespace GRFSharp
 {
-    public class SharpGRF
+    public class GRF
     {
 
-        [DllImport("zlib1.dll")]
-        public static extern int compress(byte[] dest, int destLen, byte[] source, int sourceLen);
-
+    
         #region local variables
         private string _filePathToGRF;
         private List<GRFFile> _GRFFiles = new List<GRFFile>();
@@ -99,7 +97,7 @@ namespace SAIB.SharpGRF
         /// <summary>
         /// Initializes a new instance of the <see cref="SAIB.SharpGRF.SharpGRF"/> class.
         /// </summary>
-        public SharpGRF() // Constructor
+        public GRF() // Constructor
         {
             _signature = "Master of Magic";
             _encryptionKey = new byte[14];
@@ -110,7 +108,7 @@ namespace SAIB.SharpGRF
         /// <param name='filePathToGRF'>
         /// File path to the GRF file.
         /// </param>
-        public SharpGRF(string filePathToGRF) // Constructor
+        public GRF(string filePathToGRF) // Constructor
         {
             _filePathToGRF = filePathToGRF;
 
@@ -264,7 +262,7 @@ namespace SAIB.SharpGRF
                 }
 
                 GRFFile newGRFFile = new GRFFile(
-                    System.Text.Encoding.GetEncoding("EUC-KR").GetString(System.Text.Encoding.Default.GetBytes(fileName)),
+                    System.Text.Encoding.Default.GetString(System.Text.Encoding.Default.GetBytes(fileName)),
                     fileCompressedLength,
                     fileCompressedLengthAligned,
                     fileUncompressedLength,
@@ -333,15 +331,14 @@ namespace SAIB.SharpGRF
 
             return compressedBody;
         }
-        #endregion
 
-        public void AddNewFile(string name, byte[] data)
+        public void AddFile(string filename, byte[] data)
         {
             int i = 0;
 
             foreach (GRFFile file in _GRFFiles)
             {
-                if (file.Name.ToLower() == name.ToLower())
+                if (file.Name.ToLower() == filename.ToLower())
                 {
                     _GRFFiles[i].UncompressedBody = data;
 
@@ -351,22 +348,24 @@ namespace SAIB.SharpGRF
                 i++;
             }
 
-            GRFFile f = new GRFFile(name, 0, 0, 0, 0, 0, 0, this);
+            GRFFile f = new GRFFile(filename, 0, 0, 0, 0, 0, 0, this);
             f.UncompressedBody = data;
             _GRFFiles.Add(f);
         }
 
-        public void DeleteFile(string name)
+        public void DeleteFile(string filename)
         {
             foreach (GRFFile file in _GRFFiles)
             {
-                if (file.Name.ToLower() == name.ToLower())
+                if (file.Name.ToLower() == filename.ToLower())
                 {
                     _GRFFiles.Remove(file);
                     return;
                 }
             }
         }
+        #endregion
+
     }
 }
 

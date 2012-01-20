@@ -1,5 +1,5 @@
 ﻿using System;
-using SAIB.SharpGRF;
+using GRFSharp;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ class MainClass
 		//SharpGRF newGRF = new SharpGRF("/media/B06CC97A6CC93BBA/RO/data.grf");
 		SharpGRF newGRF = new SharpGRF("/home/mercurial/GRF#/rwc.grf");
 #else
-        SharpGRF newGRF = new SharpGRF("C:/RO/rwc.grf");
+        GRF newGRF = new GRF(@"C:\Documents and Settings\User\My Documents\Visual Studio 2008\Projects\mAthena\mAthena\Example\2011-12-03Example.gpf");
 #endif
         newGRF.Open();
 
@@ -30,7 +30,7 @@ class MainClass
 
             GRFFiles[x].WriteToDisk("/home/mercurial/tempGRF/");
             percent = (float)(x + 1) / (float)GRFFiles.Count * 100.0f;
-            Console.WriteLine("{0}\t{1}%", GRFFiles[x].Name, percent);
+            //Console.WriteLine("{0}\t{1}%", GRFFiles[x].Name, percent);
 
         }
         st.Stop();
