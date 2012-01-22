@@ -64,7 +64,7 @@ namespace GRFSharp
         /// </param>
         public void WriteToDisk(string folderPath)
         {
-            FileInfo thisFileInfo = new FileInfo(folderPath + this.Name.Replace("\\", "//"));
+            FileInfo thisFileInfo = new FileInfo(folderPath + this.Name);
 
             FileStream fileStream;
             if (!thisFileInfo.Directory.Exists)
@@ -83,7 +83,8 @@ namespace GRFSharp
             fileStream.Write(this.Data, 0, this.Data.Length);
             fileStream.Close();
         }
-        #endregion
+
+        
 
         /// <summary>
         /// Write the file entry data on an steam.
@@ -101,7 +102,6 @@ namespace GRFSharp
             bw.Write((byte)_flags);
             bw.Write((int)_offset);
         }
-
         public void SaveBody(BinaryWriter bw)
         {
             bw.Flush();
@@ -118,11 +118,12 @@ namespace GRFSharp
             }
             else
             {
-                byte[] data = _ownerGRF.GetOriginalDataFromFile(this);
+                byte[] data = _ownerGRF.GetCompressedDataFromFile(this);
                 _offset = (int)bw.BaseStream.Position - 46;
                 bw.Write(data, 0, data.Length);
             }
         }
+        #endregion
     }
 }
 

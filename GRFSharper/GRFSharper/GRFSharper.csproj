@@ -37,11 +37,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Fluent">
-      <HintPath>..\Dependencies\Fluent.dll</HintPath>
+      <HintPath>..\..\..\..\Fluent Ribbon Control Suite 2.0\.NET 4.0\Assembly\Release\Fluent.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -59,6 +59,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Dialogs\ExtractProgressDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -67,8 +71,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Behaviours\GridViewColumnResize.cs" />
-    <Compile Include="Classes\SortAdorner.cs" />
+    <Compile Include="Dialogs\ExtractProgressDialog.xaml.cs">
+      <DependentUpon>ExtractProgressDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -99,20 +104,6 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\GRF#\GRF#\GRF#.csproj">
-      <Project>{2979AB5D-A234-42E3-B54F-B9F78A83E50C}</Project>
-      <Name>GRF#</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SPR\SPR.csproj">
-      <Project>{60D2422C-B3B2-4CF8-8096-085651FAB046}</Project>
-      <Name>SPR</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TGA\TargaImage.csproj">
-      <Project>{56F4BD87-2404-4263-80D5-6FA2161EB0A4}</Project>
-      <Name>TargaImage</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\Blue.png" />
     <Resource Include="Images\BlueLarge.png" />
     <Resource Include="Images\Brown.png" />
@@ -131,12 +122,11 @@
     <Resource Include="Images\Yellow.png" />
     <Resource Include="Images\YellowLarge.png" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Resource Include="Images\archive_extract.png" />
-    <Resource Include="Images\document_save.png" />
-    <Resource Include="Images\folder_new.png" />
-    <Resource Include="Images\system_search.png" />
+    <ProjectReference Include="..\..\GRF#\GRF#\GRF#.csproj">
+      <Project>{2979AB5D-A234-42E3-B54F-B9F78A83E50C}</Project>
+      <Name>GRF#</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

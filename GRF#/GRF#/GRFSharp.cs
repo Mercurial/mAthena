@@ -7,11 +7,12 @@ using System.Runtime.InteropServices;
 
 namespace GRFSharp
 {
+    #region Event Delegates
+    public delegate void ExtractCompleteEventHandler(object sender, GRFFileExtractEventArg e);
+    #endregion
     public class GRF
     {
-
-    
-        #region local variables
+        #region Local variables
         private string _filePathToGRF;
         private List<GRFFile> _GRFFiles = new List<GRFFile>();
 
@@ -38,7 +39,19 @@ namespace GRFSharp
 
         #endregion
 
-        #region public properties
+        #region Public Events
+        public event ExtractCompleteEventHandler ExtractComplete;
+        #endregion
+
+        #region Protected Events
+        protected virtual void OnExtractComplete(GRFFileExtractEventArg e)
+        {
+            if (ExtractComplete != null)
+                ExtractComplete(this, e);
+        }
+        #endregion
+
+        #region Public properties
         public List<GRFFile> Files { get { return _GRFFiles; } }
         public int FileCount { get { return _fileCount; } }
         public bool IsOpen { get { return _isOpen; } }
@@ -91,7 +104,6 @@ namespace GRFSharp
             }
         }
         #endregion
-
 
         #region Constructor
         /// <summary>
@@ -316,22 +328,33 @@ namespace GRFSharp
 
             if ((file.Flags == 3) || (file.Flags == 5))
             {
-                compressedBody = DES.Decode(compressedBody, file.CompressedLengthAligned, file.Cycle);
+                //@Todo fix DES.Decode()
+                //compressedBody = DES.Decode(compressedBody, file.CompressedLengthAligned, file.Cycle);
+                return new byte[file.CompressedLength];
             }
 
             return ZlibStream.UncompressBuffer(compressedBody);
         }
 
-        public byte[] GetOriginalDataFromFile(GRFFile file)
+        /// <summary>
+        /// Gets the byte[] data of the file in the grf. (Uncompressed)
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public byte[] GetCompressedDataFromFile(GRFFile file)
         {
             byte[] compressedBody = new byte[file.CompressedLength];
-
             _grfStream.Seek(46 + file.Offset, SeekOrigin.Begin);
             _grfStream.Read(compressedBody, 0, file.CompressedLengthAligned);
-
             return compressedBody;
         }
 
+
+        /// <summary>
+        /// Add a file inside the grf.
+        /// </summary>
+        /// <param name="filename">The name of the file to be added.</param>
+        /// <param name="data">The data of the file to be added.</param>
         public void AddFile(string filename, byte[] data)
         {
             int i = 0;
@@ -353,6 +376,10 @@ namespace GRFSharp
             _GRFFiles.Add(f);
         }
 
+        /// <summary>
+        /// Delete a file in the grf.
+        /// </summary>
+        /// <param name="filename">The file name to delete.</param>
         public void DeleteFile(string filename)
         {
             foreach (GRFFile file in _GRFFiles)
@@ -363,6 +390,19 @@ namespace GRFSharp
                     return;
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Extracts a file from the grf to the specified path.
+        /// </summary>
+        /// <param name="file">The file inside the grf</param>
+        /// <param name="path">The path where to extract the file</param>
+        public void ExtractFileToPath(GRFFile file,string path)
+        {
+            file.WriteToDisk(path);
+            OnExtractComplete(new GRFFileExtractEventArg(file));
         }
         #endregion
 
