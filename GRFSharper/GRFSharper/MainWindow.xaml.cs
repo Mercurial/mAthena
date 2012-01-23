@@ -17,6 +17,7 @@ using Microsoft.Win32;
 using GRFSharp;
 using GRFSharper.Dialogs;
 using System.Threading;
+using System.IO;
 
 namespace GRFSharper
 {
@@ -29,9 +30,15 @@ namespace GRFSharper
         ExtractProgressDialog epd;
         ObservableCollection<GRFFile> _GrfFileCollection = new ObservableCollection<GRFFile>();
 
+        string GRFSharperSignature = "GRF Sharper v0.1";
+        string FileName = "Untitled.grf";
+
+        bool isEdited = true;
+
         public MainWindow()
         {
             InitializeComponent();
+            UpdateWindowTitle();
             lvGRFItems.ItemsSource = _GrfFileCollection;
 
             //Initialize GRF Event Handlers
@@ -61,7 +68,12 @@ namespace GRFSharper
                 mainRibbon.SelectedTabItem = mainTab;
                 if (baseGRF.IsOpen)
                     baseGRF.Close();
-                baseGRF.Open(ofdGRF.FileName);
+                FileName = ofdGRF.FileName;
+                baseGRF.Open(FileName);
+
+                FileName = ofdGRF.SafeFileName;
+                UpdateWindowTitle();
+
                 UpdateGRFList();
             }
         }
@@ -70,26 +82,30 @@ namespace GRFSharper
         {
             _GrfFileCollection.Clear();
             foreach (GRFFile file in baseGRF.Files)
-                _GrfFileCollection.Add(file);
+                if(file.Flags==1)
+                    _GrfFileCollection.Add(file);
         }
 
         private void buttonExtAll_Click(object sender, RoutedEventArgs e)
-        {   
-            System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
-            System.Windows.Forms.DialogResult dr = fbd.ShowDialog();
-            if (dr == System.Windows.Forms.DialogResult.OK)
+        {
+            if (baseGRF.IsOpen)
             {
-                epd = new ExtractProgressDialog(baseGRF.FileCount);
-                Thread et = new Thread(new ParameterizedThreadStart(delegate
+                System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
+                System.Windows.Forms.DialogResult dr = fbd.ShowDialog();
+                if (dr == System.Windows.Forms.DialogResult.OK)
                 {
-                    foreach (GRFFile file in baseGRF.Files)
+                    epd = new ExtractProgressDialog(baseGRF.FileCount);
+                    Thread et = new Thread(new ThreadStart(delegate
                     {
-                        baseGRF.ExtractFileToPath(file, fbd.SelectedPath + "/");
-                    }
-                }));
-                et.Start();
-                epd.ShowDialog();
-                et.Abort();
+                        foreach (GRFFile file in baseGRF.Files)
+                        {
+                            baseGRF.ExtractFileToPath(file, fbd.SelectedPath + "/");
+                        }
+                    }));
+                    et.Start();
+                    epd.ShowDialog();
+                    et.Abort();
+                }
             }
         }
 
@@ -122,6 +138,68 @@ namespace GRFSharper
                     et.Abort();
                 }
             }
+        }
+
+        private void buttonAddFile_Click(object sender, RoutedEventArgs e)
+        {
+            FileDialog fd = new OpenFileDialog();
+            if ((bool)fd.ShowDialog())
+            {
+                GRFDirectoryPromptDialog grfdpd = new GRFDirectoryPromptDialog();
+                if ((bool)grfdpd.ShowDialog())
+                {
+                    baseGRF.AddFile(fd.FileName, grfdpd.EnteredPath+fd.SafeFileName);
+                    UpdateGRFList();
+                }
+            }
+
+        }
+
+        private void buttonAddFolder_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
+            if (fbd.ShowDialog()==System.Windows.Forms.DialogResult.OK)
+            {
+                foreach(string file in Directory.GetFiles(fbd.SelectedPath,"*",SearchOption.AllDirectories))
+                {
+                    baseGRF.AddFile(file,file.Replace(fbd.SelectedPath+"\\",""));
+                }
+                UpdateGRFList();
+            }
+        }
+
+        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (!baseGRF.IsOpen)
+            {
+                FileDialog fd = new SaveFileDialog();
+                if ((bool)fd.ShowDialog())
+                {
+                    baseGRF.SaveAs(fd.FileName);
+                    FileName = fd.SafeFileName;
+                    UpdateWindowTitle();
+                }
+            }
+            else
+            {
+                baseGRF.Save();
+
+            }
+            UpdateGRFList();
+        }
+
+        private void buttonDeleteFile_Click(object sender, RoutedEventArgs e)
+        {
+          foreach(GRFFile file in lvGRFItems.SelectedItems)
+          {
+              baseGRF.DeleteFile(file.Name);
+          }
+          UpdateGRFList();
+        }
+
+        private void UpdateWindowTitle()
+        {
+            this.Title = string.Format("{0} - {1}", GRFSharperSignature, FileName);
         }
 
        

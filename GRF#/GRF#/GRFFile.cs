@@ -19,6 +19,9 @@ namespace GRFSharp
         private int _cycle;
         private GRF _ownerGRF;
         private byte[] _uncompressedBody;
+
+        //private FileInfo _fileInfo;
+        //private FileStream _fileStream;
         #endregion
 
         #region public properties
@@ -64,24 +67,56 @@ namespace GRFSharp
         /// </param>
         public void WriteToDisk(string folderPath)
         {
-            FileInfo thisFileInfo = new FileInfo(folderPath + this.Name);
+            string filePath = folderPath + this.Name;
+            byte[] thisData = this.Data;
 
-            FileStream fileStream;
-            if (!thisFileInfo.Directory.Exists)
-                thisFileInfo.Directory.Create();
+            //if (!Directory.Exists(dirPath))
+            //    Directory.CreateDirectory(dirPath);
 
-            if (!thisFileInfo.Exists)
-            {
-                fileStream = thisFileInfo.Create();
+            //BinaryWriter b = new BinaryWriter(File.OpenWrite(filePath));
+            //b.Write(thisData);
+            //s.Close();
 
-            }
+            //if (!Directory.Exists(dirPath))
+            //    Directory.CreateDirectory(dirPath);
+
+            //Stream s =File.OpenWrite(filePath);
+            //s.Write(thisData, 0, thisData.Length);
+            //s.Close();
+
+            //@Todo Improve writing algorithm to make it faster
+            //BinaryWriter bw;
+            //FileInfo _fileInfo = new FileInfo(filePath);
+
+            //if (!_fileInfo.Exists)
+            //{
+            //    bw = new BinaryWriter(_fileInfo.Create());
+
+            //}
+            //else
+            //{
+            //    bw = new BinaryWriter(_fileInfo.Open(FileMode.Open));
+            //}
+            //bw.Write(thisData);
+            //bw.Close();
+
+            FileInfo _fileInfo = new FileInfo(filePath);
+            FileStream _fileStream;
+
+            if (!_fileInfo.Directory.Exists)
+                _fileInfo.Directory.Create();
+
+            if (!_fileInfo.Exists)
+                _fileStream = _fileInfo.Create();
             else
-            {
-                fileStream = thisFileInfo.Open(FileMode.Open);
-            }
+                _fileStream = _fileInfo.Open(FileMode.Open);
 
-            fileStream.Write(this.Data, 0, this.Data.Length);
-            fileStream.Close();
+            _fileStream.BeginWrite(thisData, 0, thisData.Length, (IAsyncResult ar) =>
+            {
+                _fileStream.Close();
+            },null);
+            //_fileStream.Write(thisData, 0, thisData.Length);
+            //_fileStream.Close();
         }
 
         
@@ -93,7 +128,7 @@ namespace GRFSharp
         /// <param name="bw">Stream to write the file entry.</param>
         public void Save(BinaryWriter bw)
         {
-            byte[] name = Encoding.GetEncoding(949).GetBytes(_filename);
+            byte[] name = Encoding.Default.GetBytes(_filename);
             bw.Write(name, 0, name.Length);
             bw.Write((byte)0);
             bw.Write((int)_compressedLength);

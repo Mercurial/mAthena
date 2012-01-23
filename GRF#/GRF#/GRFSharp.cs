@@ -145,7 +145,6 @@ namespace GRFSharp
             Encoding.ASCII.GetBytes(_signature).CopyTo(signatureByte, 0);
             bw.Write(signatureByte, 0, 15);
             bw.Write((byte)0);
-
             bw.Write(_encryptionKey, 0, 14);
 
             bw.Write((int)0); // will be updated later
@@ -192,6 +191,67 @@ namespace GRFSharp
 
             File.Copy(tempfile, _filePathToGRF, true);
 
+            Open();
+        }
+
+        public void SaveAs(string filepath)
+        {
+            // Write to temporary file
+            string tempfile = Path.GetTempFileName();
+            FileStream fs = new FileStream(tempfile, FileMode.Create);
+            BinaryWriter bw = new BinaryWriter(fs);
+
+            byte[] signatureByte = new byte[Math.Max(_signature.Length, 15)];
+            Encoding.ASCII.GetBytes(_signature).CopyTo(signatureByte, 0);
+            bw.Write(signatureByte, 0, 15);
+            bw.Write((byte)0);
+            bw.Write(_encryptionKey, 0, 14);
+
+            bw.Write((int)0); // will be updated later
+            bw.Write((int)_m1);
+            bw.Write((int)_GRFFiles.Count + _m1 + 7);
+            bw.Write((int)0x200); // We always save as 2.0
+
+            foreach (GRFFile file in _GRFFiles)
+            {
+                file.SaveBody(bw);
+            }
+
+            bw.Flush();
+
+            int fileTablePos = (int)fs.Position;
+
+            MemoryStream bodyStream = new MemoryStream();
+            BinaryWriter bw2 = new BinaryWriter(bodyStream);
+
+            foreach (GRFFile file in _GRFFiles)
+            {
+                file.Save(bw2);
+            }
+
+            bw2.Flush();
+            //byte[] compressedBody = new byte[_uncompressedLength + 100];
+            //int size = compressedBody.Length;
+            //ZLib.compress(compressedBody, ref size, bodyStream.GetBuffer(), (int)bodyStream.Length);
+            byte[] compressedBody = ZlibStream.CompressBuffer(bodyStream.GetBuffer());
+
+            bw.Write((int)compressedBody.Length);
+            bw.Write((int)bodyStream.Length);
+            bw.Write(compressedBody, 0, compressedBody.Length);
+            bw2.Close();
+
+            // Update file table offset
+            bw.BaseStream.Seek(30, SeekOrigin.Begin);
+            bw.Write((int)fileTablePos - 46);
+
+            bw.Close();
+
+            if (_grfStream != null)
+                _grfStream.Close();
+
+            File.Copy(tempfile, filepath, true);
+
+            _filePathToGRF = filepath;
             Open();
         }
 
@@ -272,6 +332,9 @@ namespace GRFSharp
                     for (lop = 10, srccount = 1; srclen >= lop; lop *= 10, srccount++)
                         fileCycle = srccount;
                 }
+
+                if (fileFlags == 2) // Do not add folders 
+                    return;
 
                 GRFFile newGRFFile = new GRFFile(
                     System.Text.Encoding.Default.GetString(System.Text.Encoding.Default.GetBytes(fileName)),
@@ -355,23 +418,23 @@ namespace GRFSharp
         /// </summary>
         /// <param name="filename">The name of the file to be added.</param>
         /// <param name="data">The data of the file to be added.</param>
-        public void AddFile(string filename, byte[] data)
+        public void AddFile(string inputFilePath,string outputFilePath)
         {
             int i = 0;
+            byte[] data = File.ReadAllBytes(inputFilePath);
 
             foreach (GRFFile file in _GRFFiles)
             {
-                if (file.Name.ToLower() == filename.ToLower())
+                if (file.Name.ToLower() == outputFilePath.ToLower())
                 {
                     _GRFFiles[i].UncompressedBody = data;
-
                     return;
                 }
 
                 i++;
             }
 
-            GRFFile f = new GRFFile(filename, 0, 0, 0, 0, 0, 0, this);
+            GRFFile f = new GRFFile(outputFilePath, 0, 0, 0, 1, 0, 0, this);
             f.UncompressedBody = data;
             _GRFFiles.Add(f);
         }
@@ -401,8 +464,11 @@ namespace GRFSharp
         /// <param name="path">The path where to extract the file</param>
         public void ExtractFileToPath(GRFFile file,string path)
         {
-            file.WriteToDisk(path);
-            OnExtractComplete(new GRFFileExtractEventArg(file));
+            if (file.Flags == 1)
+            {
+                file.WriteToDisk(path);
+                OnExtractComplete(new GRFFileExtractEventArg(file));
+            }
         }
         #endregion
 
