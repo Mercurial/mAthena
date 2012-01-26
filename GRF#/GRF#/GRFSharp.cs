@@ -4,6 +4,7 @@ using Ionic.Zlib;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace GRFSharp
 {
@@ -14,7 +15,9 @@ namespace GRFSharp
     public delegate void GRFMetaWriteCompleteEventHandler(object sender);
     public delegate void FileBodyWriteCompleteEventHandler(object sender,GRFEventArg e);
     public delegate void FileTableWriteCompleteEventHandler(object sender, GRFEventArg e);
-    public delegate void GRFSaveCompleteEventHandler(object sender);
+    public delegate void SaveCompleteEventHandler(object sender);
+    public delegate void FileCountReadCompleteEventHandler(object sender);
+    public delegate void GRFOpenCompleteEventHandler(object sender);
     #endregion
     public class GRF
     {
@@ -52,7 +55,9 @@ namespace GRFSharp
         public event GRFMetaWriteCompleteEventHandler GRFMetaWriteComplete;
         public event FileBodyWriteCompleteEventHandler FileBodyWriteComplete;
         public event FileTableWriteCompleteEventHandler FileTableWriteComplete;
-        public event GRFSaveCompleteEventHandler GRFSaveComplete;
+        public event SaveCompleteEventHandler GRFSaveComplete;
+        public event FileCountReadCompleteEventHandler FileCountReadComplete;
+        public event GRFOpenCompleteEventHandler GRFOpenComplete;
         #endregion
 
         #region Protected Events
@@ -95,6 +100,23 @@ namespace GRFSharp
                 GRFSaveComplete(this);
             }
         }
+        protected virtual void OnFileCountReadComplete()
+        {
+            if (FileCountReadComplete != null)
+            {
+                FileCountReadComplete(this);
+            }
+        }
+
+        protected virtual void OnGRFOpenComplete()
+        {
+            if (GRFOpenComplete != null)
+            {
+                GRFOpenComplete(this);
+            }
+
+        }
+
         #endregion
 
         #region Public properties
@@ -250,6 +272,7 @@ namespace GRFSharp
             OnGRFSaveComplete();
 
             _filePathToGRF = filepath;
+            Close();
             Open();
         }
 
@@ -297,7 +320,7 @@ namespace GRFSharp
             _bodyBytes = ZlibStream.UncompressBuffer(compressedBodyBytes);
 
             _fileCount = m2 - m1 - 7;
-
+            OnFileCountReadComplete();
             MemoryStream bodyStream = new MemoryStream(_bodyBytes);
             BinaryReader bodyReader = new BinaryReader(bodyStream);
 
@@ -332,8 +355,10 @@ namespace GRFSharp
                 }
 
                 if (fileFlags == 2) // Do not add folders 
-                    return;
-
+                {
+                    OnFileReadComplete(new GRFEventArg(new GRFFile(System.Text.Encoding.Default.GetString(System.Text.Encoding.Default.GetBytes(fileName)),0,0,0,0,0,0,this)));
+                    continue;
+                }
                 GRFFile newGRFFile = new GRFFile(
                     System.Text.Encoding.Default.GetString(System.Text.Encoding.Default.GetBytes(fileName)),
                     fileCompressedLength,
@@ -348,6 +373,7 @@ namespace GRFSharp
                 OnFileReadComplete(new GRFEventArg(newGRFFile));
             }
             _isOpen = true;
+            OnGRFOpenComplete();
         }
 
         /// <summary>
@@ -367,7 +393,8 @@ namespace GRFSharp
         /// </summary>
         public void Close()
         {
-            _grfStream.Close();
+            if(_isOpen)
+                _grfStream.Close();
             _isOpen = false;
         }
 
@@ -435,6 +462,7 @@ namespace GRFSharp
             GRFFile f = new GRFFile(outputFilePath, 0, 0, 0, 1, 0, 0, this);
             f.UncompressedBody = data;
             _GRFFiles.Add(f);
+            _fileCount++;
             OnFileAddComplete(new GRFEventArg(f));
         }
 
@@ -449,6 +477,7 @@ namespace GRFSharp
                 if (file.Name.ToLower() == filename.ToLower())
                 {
                     _GRFFiles.Remove(file);
+                    _fileCount--;
                     return;
                 }
             }

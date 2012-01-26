@@ -15,19 +15,17 @@ using System.Windows.Threading;
 namespace GRFSharper.Dialogs
 {
     /// <summary>
-    /// Interaction logic for ExtractProgressDialog.xaml
+    /// Interaction logic for AddFileProgressDialog.xaml
     /// </summary>
-    public partial class ExtractProgressDialog : Window
+    public partial class AddFileProgressDialog : Window
     {
         private int _totalFileCount = 0;
         private int _fileExtCtr = 0;
         private string _currentFilename = string.Empty;
-
         DispatcherTimer dt = new DispatcherTimer();
 
-        public ExtractProgressDialog(int fileCount)
+        public AddFileProgressDialog()
         {
-            _totalFileCount = fileCount;
             InitializeComponent();
             dt.Tick += new EventHandler(dt_Tick);
         }
@@ -44,9 +42,11 @@ namespace GRFSharper.Dialogs
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        public void SetFileCount(int count)
         {
-            UpdateFileCount();
+            _totalFileCount = count;
+            dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            dt.Start();
         }
 
         private void UpdateFileCount()
@@ -56,7 +56,8 @@ namespace GRFSharper.Dialogs
 
         private void UpdateProgressBar()
         {
-            progressBar1.Value = ((double)_fileExtCtr / (double)_totalFileCount) * 100;
+            if(_fileExtCtr!=0 && _totalFileCount !=0)
+                progressBar1.Value = ((double)_fileExtCtr / (double)_totalFileCount) * 100;
         }
 
 
@@ -66,17 +67,9 @@ namespace GRFSharper.Dialogs
             _currentFilename = filename;
         }
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            dt.Stop();
-            this.Close();
-        }
-
-        public void ShowDialog()
-        {
-            dt.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            dt.Start();
-            base.ShowDialog();
+            UpdateFileCount();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

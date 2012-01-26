@@ -27,10 +27,15 @@ namespace GRFSharper
     public partial class MainWindow : RibbonWindow
     {
         GRF baseGRF = new GRF();
-        ExtractProgressDialog epd;
-        ObservableCollection<GRFFile> _GrfFileCollection = new ObservableCollection<GRFFile>();
 
-        string GRFSharperSignature = "GRF Sharper v0.1";
+        ExtractProgressDialog epd;
+        GRFOpenProgressDialog grfopd;
+        AddFileProgressDialog afd;
+        WriteFileProgressDialog sfd;
+
+        ObservableCollection<GRFFile> _GrfFileCollection = new ObservableCollection<GRFFile>();
+        Thread openGRFThread,addFileThread,writeFileThread;
+        string GRFSharperSignature = "GRF Sharper v0.2";
         string FileName = "Untitled.grf";
 
         bool isEdited = true;
@@ -40,12 +45,71 @@ namespace GRFSharper
             InitializeComponent();
             UpdateWindowTitle();
             lvGRFItems.ItemsSource = _GrfFileCollection;
-
+            InitGRFEventHandlers();
+        }
+        void InitGRFEventHandlers()
+        {
             //Initialize GRF Event Handlers
             baseGRF.ExtractComplete += new ExtractCompleteEventHandler(baseGRF_ExtractComplete);
+            baseGRF.FileReadComplete += new FileReadCompleteEventHandler(baseGRF_FileReadComplete);
+            baseGRF.FileCountReadComplete += new FileCountReadCompleteEventHandler(baseGRF_FileCountReadComplete);
+            baseGRF.GRFOpenComplete += new GRFOpenCompleteEventHandler(baseGRF_GRFOpenComplete);
+            baseGRF.FileAddComplete += new FileAddCompleteEventHandler(baseGRF_FileAddComplete);
+            baseGRF.FileBodyWriteComplete += new FileBodyWriteCompleteEventHandler(baseGRF_FileBodyWriteComplete);
+            baseGRF.GRFSaveComplete += new SaveCompleteEventHandler(baseGRF_GRFSaveComplete);
+        }
+        void baseGRF_GRFSaveComplete(object sender)
+        {
+            this.Dispatcher.Invoke(new ThreadStart(() =>
+            {
+                UpdateWindowTitle();
+                grfopd = new GRFOpenProgressDialog();
+                grfopd.SetFileCount(baseGRF.FileCount);
+                grfopd.Show();
+            }));
         }
 
-        void baseGRF_ExtractComplete(object sender, GRFFileExtractEventArg e)
+        void baseGRF_FileBodyWriteComplete(object sender, GRFEventArg e)
+        {
+            sfd.Dispatcher.Invoke(new ThreadStart(() =>
+            {
+                sfd.UpdateProgress(e.File.Name);
+            }));
+        }
+
+        void baseGRF_FileAddComplete(object sender, GRFEventArg e)
+        {
+            afd.Dispatcher.Invoke(new ThreadStart(() =>
+                {
+                    afd.UpdateProgress(e.File.Name);
+                }));
+        }
+
+        void baseGRF_FileReadComplete(object sender, GRFEventArg e)
+        {
+            grfopd.Dispatcher.Invoke(new ThreadStart(() => 
+                {
+                   grfopd.UpdateProgress(e.File.Name);
+                }));
+        }
+
+        void baseGRF_GRFOpenComplete(object sender)
+        {
+            this.Dispatcher.Invoke(new ThreadStart(() =>
+            {
+                UpdateWindowTitle();
+                UpdateGRFList();
+                if (openGRFThread != null)
+                    openGRFThread.Abort();
+            }));
+        }
+
+        void baseGRF_FileCountReadComplete(object sender)
+        {
+            grfopd.SetFileCount(baseGRF.FileCount);
+        }
+
+        void baseGRF_ExtractComplete(object sender, GRFEventArg e)
         {
             epd.Dispatcher.Invoke(new ThreadStart(() => epd.UpdateProgress(e.File.Name)));
         }
@@ -68,13 +132,15 @@ namespace GRFSharper
                 mainRibbon.SelectedTabItem = mainTab;
                 if (baseGRF.IsOpen)
                     baseGRF.Close();
-                FileName = ofdGRF.FileName;
-                baseGRF.Open(FileName);
-
                 FileName = ofdGRF.SafeFileName;
-                UpdateWindowTitle();
-
-                UpdateGRFList();
+                grfopd = new GRFOpenProgressDialog();
+                openGRFThread = new Thread(new ThreadStart(() =>
+                {
+                    baseGRF.Open(ofdGRF.FileName);
+                }));
+                openGRFThread.Start();
+                //baseGRF.Open(ofdGRF.FileName);
+                grfopd.ShowDialog();
             }
         }
 
@@ -160,11 +226,23 @@ namespace GRFSharper
             System.Windows.Forms.FolderBrowserDialog fbd = new System.Windows.Forms.FolderBrowserDialog();
             if (fbd.ShowDialog()==System.Windows.Forms.DialogResult.OK)
             {
-                foreach(string file in Directory.GetFiles(fbd.SelectedPath,"*",SearchOption.AllDirectories))
-                {
-                    baseGRF.AddFile(file,file.Replace(fbd.SelectedPath+"\\",""));
-                }
-                UpdateGRFList();
+                string[] filesToAdd = Directory.GetFiles(fbd.SelectedPath, "*", SearchOption.AllDirectories);
+                afd = new AddFileProgressDialog();
+                afd.SetFileCount(filesToAdd.Length);
+                addFileThread = new Thread(new ThreadStart(() =>
+                    {
+                        foreach (string file in filesToAdd)
+                        {
+                            baseGRF.AddFile(file, file.Replace(fbd.SelectedPath + "\\", ""));
+                        }
+                        this.Dispatcher.Invoke(new ThreadStart(() =>
+                            {
+                                UpdateGRFList();
+                            }));
+                        addFileThread.Abort();
+                    }));
+                addFileThread.Start();
+                afd.ShowDialog();
             }
         }
 
@@ -175,15 +253,29 @@ namespace GRFSharper
                 FileDialog fd = new SaveFileDialog();
                 if ((bool)fd.ShowDialog())
                 {
-                    baseGRF.SaveAs(fd.FileName);
-                    FileName = fd.SafeFileName;
-                    UpdateWindowTitle();
+                    sfd = new WriteFileProgressDialog();
+                    sfd.SetFileCount(baseGRF.FileCount);
+                    writeFileThread = new Thread(new ThreadStart(() =>
+                        {
+                            FileName = fd.SafeFileName;
+                            baseGRF.SaveAs(fd.FileName);
+                            writeFileThread.Abort();
+                        }));
+                    writeFileThread.Start();
+                    sfd.ShowDialog();
                 }
             }
             else
             {
-                baseGRF.Save();
-
+                sfd = new WriteFileProgressDialog();
+                sfd.SetFileCount(baseGRF.FileCount);
+                writeFileThread = new Thread(new ThreadStart(() =>
+                {
+                    baseGRF.Save();
+                    writeFileThread.Abort();
+                }));
+                writeFileThread.Start();
+                sfd.ShowDialog();
             }
             UpdateGRFList();
         }
@@ -200,6 +292,17 @@ namespace GRFSharper
         private void UpdateWindowTitle()
         {
             this.Title = string.Format("{0} - {1}", GRFSharperSignature, FileName);
+        }
+
+        private void BackstageTabItem_MouseUp_1(object sender, MouseButtonEventArgs e)
+        {
+            FileName = "Untitled.grf";
+            baseGRF.Close();
+            baseGRF = new GRF();
+            InitGRFEventHandlers();
+            UpdateGRFList();
+            UpdateWindowTitle();
+            mainRibbon.SelectedTabItem = mainTab;
         }
 
        

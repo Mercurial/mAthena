@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Title="GRF Sharper v0.1" Width="761" Height="457" Background="#FFEBEDF0">
+    Title="GRF Sharper v0.1" Width="761" Height="457" Background="#FFEBEDF0" WindowStartupLocation="CenterScreen">
 
     <Grid Name="mainGrid">
         <Grid.ColumnDefinitions>
@@ -41,7 +41,7 @@
             <Fluent:Ribbon.Menu>
                 <Fluent:Backstage>
                     <Fluent:BackstageTabControl>
-                        <Fluent:BackstageTabItem Header="New"/>
+                        <Fluent:BackstageTabItem Header="New" MouseUp="BackstageTabItem_MouseUp_1"/>
                         <Fluent:BackstageTabItem Header="Open" MouseUp="BackstageTabItem_MouseUp">
                         </Fluent:BackstageTabItem>
                     </Fluent:BackstageTabControl>
