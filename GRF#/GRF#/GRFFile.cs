@@ -29,7 +29,7 @@ namespace GRFSharp
         public string Extension { get { return new System.IO.FileInfo(_filename).Extension; } }
         public int CompressedLength { get { return _compressedLength; } }
         public int UncompressedLength { get { return _uncompressedLength; } }
-        public int CompressedLengthAligned { get { return _compressedLength; } }
+        public int CompressedLengthAligned { get { return _comressedLengthAligned; } }
         public byte Flags { get { return _flags; } }
         public int Offset { get { return _offset; } }
         public int Cycle { get { return _cycle; } }
