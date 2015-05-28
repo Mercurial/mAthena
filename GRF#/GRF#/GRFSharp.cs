@@ -435,7 +435,7 @@ namespace GRFSharp
         {
             byte[] compressedBody = new byte[file.CompressedLength];
             _grfStream.Seek(46 + file.Offset, SeekOrigin.Begin);
-            _grfStream.Read(compressedBody, 0, file.CompressedLengthAligned);
+            _grfStream.Read(compressedBody, 0, file.CompressedLength);
             return compressedBody;
         }
 
