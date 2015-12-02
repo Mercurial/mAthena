@@ -79,10 +79,13 @@ namespace GRFSharper
 
         void baseGRF_FileAddComplete(object sender, GRFEventArg e)
         {
-            afd.Dispatcher.Invoke(new ThreadStart(() =>
-                {
-                    afd.UpdateProgress(e.File.Name);
-                }));
+            if (afd != null)
+            {
+                afd.Dispatcher.Invoke(new ThreadStart(() =>
+                    {
+                        afd.UpdateProgress(e.File.Name);
+                    }));
+            }
         }
 
         void baseGRF_FileReadComplete(object sender, GRFEventArg e)

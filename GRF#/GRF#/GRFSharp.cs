@@ -433,7 +433,7 @@ namespace GRFSharp
         /// <returns></returns>
         public byte[] GetCompressedDataFromFile(GRFFile file)
         {
-            byte[] compressedBody = new byte[file.CompressedLength];
+            byte[] compressedBody = new byte[file.CompressedLengthAligned];
             _grfStream.Seek(46 + file.Offset, SeekOrigin.Begin);
             _grfStream.Read(compressedBody, 0, file.CompressedLengthAligned);
             return compressedBody;
